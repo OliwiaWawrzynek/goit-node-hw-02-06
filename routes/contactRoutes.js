@@ -1,9 +1,15 @@
 const express = require("express");
 const contactController = require("../controllers/contactController");
 const router = express.Router();
+const { protect } = require("./../controllers/authController");
 
+router.param("contactId", protect);
 router.param("contactId", contactController.checkID);
-router.route("/").get(contactController.get).post(contactController.create);
+
+router
+  .route("/")
+  .get(protect, contactController.get)
+  .post(protect, contactController.create);
 
 router
   .route("/:contactId")

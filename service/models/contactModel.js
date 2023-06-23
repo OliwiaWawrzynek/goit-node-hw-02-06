@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const contactSchema = new mongoose.Schema({
   name: {
@@ -10,10 +11,15 @@ const contactSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
+    validate: [validator.isMobilePhone, "Please provide proper phone number"],
   },
   favorite: {
     type: Boolean,
     default: false,
+  },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
   },
 }, { versionKey: false });
 
