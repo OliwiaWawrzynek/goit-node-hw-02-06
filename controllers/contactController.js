@@ -1,4 +1,3 @@
-const Joi = require("joi");
 const {
   listContacts,
   getContactById,
@@ -7,31 +6,10 @@ const {
   updateContact,
 } = require("../service");
 
-const phonePattern =
-  /^\s*(?:\+?(\d{1,3}))?([-. (]*(\d{3})[-. )]*)?((\d{3})[-. ]*(\d{2,4})(?:[-.x ]*(\d+))?)\s*$/;
-
-const addSchema = Joi.object({
-  name: Joi.string(),
-  email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: true } }),
-  phone: Joi.string().pattern(phonePattern),
-  favorite: Joi.boolean(),
-});
-
-const validateSchema = (schema, res, body) => {
-  const { error } = schema.validate(body);
-  if (error) {
-    return res.status(400).json({
-      status: "fail",
-      code: 400,
-      message: error.details[0].message,
-      data: null,
-    });
-  }
-};
-
-const checkID = async (_, res, next, val) => {
+const checkID = async (req, res, next, val) => {
   try {
-    const contacts = await listContacts();
+    const contacts = await listContacts(req.user._id);
+    console.log(contacts.find((contact) => contact.id === val));
     if (!contacts.find((contact) => contact.id === val)) {
       return res.status(404).json({
         status: "fail",
@@ -47,9 +25,9 @@ const checkID = async (_, res, next, val) => {
   }
 };
 
-const get = async (_, res, next) => {
+const get = async (req, res, next) => {
   try {
-    const contacts = await listContacts();
+    const contacts = await listContacts(req.user._id);
     res.status(200).json({
       status: "success",
       code: 200,
@@ -63,7 +41,7 @@ const get = async (_, res, next) => {
 
 const getById = async (req, res, next) => {
   try {
-    const contact = await getContactById(req.params.contactId);
+    const contact = await getContactById(req.params.contactId, req.user._id);
     res.status(200).json({
       status: "success",
       code: 200,
@@ -77,8 +55,7 @@ const getById = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
-    validateSchema(addSchema, res, res.body);
-    const newContact = await createContact(req.body);
+    const newContact = await createContact(req.body, req.user._id);
     res.status(201).json({
       status: "success",
       code: 201,
@@ -92,7 +69,7 @@ const create = async (req, res, next) => {
 
 const remove = async (req, res, next) => {
   try {
-    await removeContact(req.params.contactId);
+    await removeContact(req.params.contactId, req.user._id);
     res.status(200).json({
       status: "success",
       code: 200,
@@ -115,8 +92,11 @@ const update = async (req, res, next) => {
         data: null,
       });
     }
-    validateSchema(addSchema, res, res.body);
-    const updatedContact = await updateContact(req.params.contactId, req.body);
+    const updatedContact = await updateContact(
+      req.params.contactId,
+      req.body,
+      req.user._id
+    );
     res.status(200).json({
       status: "success",
       code: 200,
@@ -140,9 +120,13 @@ const updateStatus = async (req, res, next) => {
       });
     }
 
-    const updatedContact = await updateContact(req.params.contactId, {
-      favorite,
-    });
+    const updatedContact = await updateContact(
+      req.params.contactId,
+      {
+        favorite,
+      },
+      req.user._id
+    );
     res.status(200).json({
       status: "success",
       code: 200,

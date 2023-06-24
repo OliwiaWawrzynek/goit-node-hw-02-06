@@ -1,4 +1,5 @@
 const Contact = require("./models/contactModel");
+const User = require("./models/userModel");
 
 const listContacts = () => {
   return Contact.find();
@@ -23,10 +24,18 @@ const updateContact = (id, body) => {
   });
 };
 
+const updateUser = (id, body) => {
+  return User.findByIdAndUpdate(id, body, {
+    new: true,
+    runValidators: true,
+  });
+};
+
 module.exports = {
   listContacts,
   getContactById,
   removeContact,
   createContact,
   updateContact,
+  updateUser,
 };
