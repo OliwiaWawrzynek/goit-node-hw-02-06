@@ -8,6 +8,8 @@ const {
 const {
   getCurrentUser,
   updateSubscription,
+  updateAvatar,
+  uploadAvatar,
 } = require("./../controllers/userController");
 
 const router = express.Router();
@@ -16,6 +18,7 @@ router.post("/signup", signup);
 router.post("/login", login);
 router.get("/logout", protect, logout);
 router.get("/current", protect, getCurrentUser);
-router.patch("/:userId", protect, updateSubscription);
+router.patch("/", protect, updateSubscription);
+router.patch("/public/avatars", protect, uploadAvatar, updateAvatar);
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const User = require("./../service/models/userModel");
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
+const { generateProfilePhoto } = require("./userController");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -10,7 +11,17 @@ const signToken = (id) => {
 
 const signup = async (req, res, next) => {
   const { email, password } = req.body;
+  const profilePhoto = generateProfilePhoto(
+    email,
+    {
+      s: "250",
+      d: "retro",
+      f: "y",
+    },
+    false
+  );
   const user = await User.findOne({ email });
+
   if (user) {
     return res.status(409).json({
       status: "fail",
@@ -22,6 +33,7 @@ const signup = async (req, res, next) => {
     const newUser = await User.create({
       email,
       password,
+      avatarURL: profilePhoto,
     });
     res.status(201).json({
       status: "success",

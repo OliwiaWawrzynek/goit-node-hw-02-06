@@ -1,24 +1,24 @@
 const Contact = require("./models/contactModel");
 const User = require("./models/userModel");
 
-const listContacts = () => {
-  return Contact.find();
+const listContacts = (user, query) => {
+  return Contact.find({ owner: user, ...query });
 };
 
-const getContactById = (id) => {
-  return Contact.findById(id);
+const getContactById = (id, user) => {
+  return Contact.findOne({ _id: id, owner: user });
 };
 
-const removeContact = (id) => {
-  return Contact.findByIdAndDelete(id);
+const removeContact = (id, user) => {
+  return Contact.findOneAndRemove({ _id: id, owner: user });
 };
 
-const createContact = (body) => {
-  return Contact.create(body);
+const createContact = (body, user) => {
+  return Contact.create({ ...body, owner: user });
 };
 
-const updateContact = (id, body) => {
-  return Contact.findByIdAndUpdate(id, body, {
+const updateContact = (id, body, user) => {
+  return Contact.findOneAndUpdate({ _id: id, owner: user }, body, {
     new: true,
     runValidators: true,
   });

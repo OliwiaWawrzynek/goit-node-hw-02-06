@@ -20,6 +20,9 @@ const userSchema = mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, "Please provide a valid email"],
   },
+  avatarURL: {
+    type: String,
+  },
   subscription: {
     type: String,
     enum: {
@@ -32,7 +35,7 @@ const userSchema = mongoose.Schema({
     type: String,
     default: null,
   },
-});
+}, { versionKey: false });
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
