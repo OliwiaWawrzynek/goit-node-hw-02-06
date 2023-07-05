@@ -27,7 +27,26 @@ const checkID = async (req, res, next, val) => {
 
 const get = async (req, res, next) => {
   try {
-    const contacts = await listContacts(req.user._id);
+    const queryObj = { ...req.query };
+    const excludedFields = ["page", "sort", "limit", "fields"];
+    excludedFields.forEach((el) => delete queryObj[el]);
+
+    let query = listContacts(req.user._id, queryObj);
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 50;
+    const skip = limit * (page - 1);
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const contactsQuantity = await Contact.countDocuments();
+
+      if (skip >= contactsQuantity) {
+        throw new Error("This page does not exist");
+      }
+    }
+
+    const contacts = await query;
     res.status(200).json({
       status: "success",
       code: 200,
